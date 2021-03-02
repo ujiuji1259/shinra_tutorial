@@ -58,3 +58,7 @@ class ShinraDataset(Dataset):
     def __len__(self):
         return len(self.tokens)
 
+def my_collate_fn(batch):
+    tokens, labels, infos = list(zip(*batch))
+    return tokens, labels, infos
+
