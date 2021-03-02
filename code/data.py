@@ -46,9 +46,9 @@ class ShinraDataset(Dataset):
         return label_vocab
 
     def _preprocess(self, tokens, labels):
-        tokens = ["[CLS]"] + [self.vocab[t] for t in tokens][:512]
+        tokens = ["[CLS]"] + [self.vocab[t] for t in tokens][:511]
         tokens = self.tokenizer.convert_tokens_to_ids(tokens)
-        labels = ["O"] + [self.label_vocab[l] for l in labels][:512]
+        labels = [self.label_vocab["O"]] + [self.label_vocab[l] for l in labels][:511]
         return tokens, labels
 
     def __getitem__(self, item):

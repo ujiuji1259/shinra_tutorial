@@ -1,5 +1,6 @@
 import argparse
 
+from tqdm import tqdm
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -29,7 +30,7 @@ def train(model, dataset, lr=5e-5, batch_size=16, epoch=10):
     losses = []
     for e in range(epoch):
         all_loss = 0
-        for tokens, labels, infos in dataloader:
+        for tokens, labels, infos in tqdm(dataloader):
             optimizer.zero_grad()
 
             input_x = pad_sequence([torch.tensor(token)
