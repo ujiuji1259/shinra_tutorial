@@ -9,6 +9,8 @@ from transformers import BertForTokenClassification, BertJapaneseTokenizer
 
 from code.data import ShinraDataset, my_collate_fn
 
+device = "cuda" if torch.cuda.is_available else "cpu"
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -34,9 +36,9 @@ def train(model, dataset, lr=5e-5, batch_size=16, epoch=10):
             optimizer.zero_grad()
 
             input_x = pad_sequence([torch.tensor(token)
-                                    for token in tokens], batch_first=True, padding_value=0)
+                                    for token in tokens], batch_first=True, padding_value=0).to(device)
             input_y = pad_sequence([torch.tensor(label)
-                                    for label in labels], batch_first=True, padding_value=0)
+                                    for label in labels], batch_first=True, padding_value=0).to(device)
 
             mask = input_x > 0
             output = model(input_x, labels=input_y, attention_mask=mask)
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     dataset = ShinraDataset(args.input_path, tokenizer)
 
     # load model
-    model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab))
+    model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab)).to(device)
 
     losses = train(model, dataset, lr=args.lr, batch_size=args.batch_size, epoch=args.epoch)
     #torch.save(model.state_dict(), args.model_path)

@@ -12,7 +12,13 @@ class ShinraDataset(Dataset):
         dataset_path = "train.iob" if self.is_train else "test.iob"
         self.vocab = self._read_vocab(base_dir / "vocab.txt")
         self.tokens, self.labels, self.infos = self._read_iob(base_dir / dataset_path)
-        self.label_vocab = self._create_label_vocab(self.labels)
+
+        if (base_dir / "label.txt").exists():
+            self.label_vocab, self.id2label = self._load_label_vocab(base_dir / "label.txt")
+        else:
+            self.label_vocab, self.id2label = self._create_label_vocab(self.labels)
+            with open(base_dir / "label.txt", 'w') as f:
+                f.write('\n'.join(self.id2label))
 
     def _read_vocab(self, path):
         with open(path, 'r') as f:
@@ -37,13 +43,22 @@ class ShinraDataset(Dataset):
 
         return tokens, labels, infos
 
+    def _load_label_vocab(self, path):
+        with open(path, 'r') as f:
+            id2label = [l for l in f.read().split("\n") if l != '']
+        label_vocab = {w:id for id, w in enumerate(id2label)}
+        return label_vocab, id2label
+
     def _create_label_vocab(self, labels):
-        label_vocab = {"O": 0}
+        id2label = ["O"]
         for label in labels:
             for l in label:
-                if l not in label_vocab:
-                    label_vocab[l] = len(label_vocab)
-        return label_vocab
+                if l not in id2label:
+                    id2label.append(l)
+
+        label_vocab = {w:id for id, w in enumerate(id2label)}
+        
+        return label_vocab, id2label
 
     def _preprocess(self, tokens, labels):
         tokens = ["[CLS]"] + [self.vocab[t] for t in tokens][:511]

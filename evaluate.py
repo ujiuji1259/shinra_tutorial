@@ -10,12 +10,15 @@ from code.data import ShinraDataset, my_collate_fn
 from code.util import decode_output, print_shinra_format
 
 
+device = "cuda" if torch.cuda.is_available else "cpu"
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model_path", type=str, default="./bert.model", help="path for saving model")
-    parser.add_argument("--input_path", type=str, , help="path for input datsaet")
-    parser.add_argument("--output_path", type=str, , help="path for output datsaet")
+    parser.add_argument("--input_path", type=str, help="path for input datsaet")
+    parser.add_argument("--output_path", type=str, help="path for output datsaet")
 
     args = parser.parse_args()
     return args
@@ -23,17 +26,17 @@ def parse_arguments():
 
 def predict(model, dataset):
     with torch.no_grad():
-        dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=my_collate_fn)
+        dataloader = DataLoader(dataset, batch_size=16, collate_fn=my_collate_fn)
 
         losses = []
         preds = []
         test_infos = []
         for tokens, _, infos in dataloader:
             input_x = pad_sequence([torch.tensor(token)
-                                    for token in tokens], batch_first=True, padding_value=0)
+                                    for token in tokens], batch_first=True, padding_value=0).to(device)
 
             mask = input_x > 0
-            output = model(input_x, labels=input_y, attention_mask=mask)
+            output = model(input_x, attention_mask=mask)
 
             scores, idxs = torch.max(output[0], dim=-1)
 
@@ -54,11 +57,11 @@ if __name__ == "__main__":
     tokenizer = BertJapaneseTokenizer.from_pretrained('cl-tohoku/bert-base-japanese-whole-word-masking')
 
     # load dataset
-    dataset = ShinraDataset(args.input_path, tokenizer)
+    dataset = ShinraDataset(args.input_path, tokenizer, is_train=False)
 
     # load model
-    model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab))
-    model.load_state_dict(torch.load(args.model_path))
+    model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab)).to(device)
+    #model.load_state_dict(torch.load(args.model_path))
 
     preds, infos = predict(model, dataset)
     outputs = decoce_output(preds, infos)
