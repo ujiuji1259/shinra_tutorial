@@ -3,10 +3,10 @@ from torch.utils.data import Dataset
 
 class ShinraDataset(Dataset):
     def __init__(self, data_dir, tokenizer, is_train=True):
+        self.is_train = is_train
         self.base_dir = Path(data_dir)
         self.tokenizer = tokenizer
         self._read(self.base_dir)
-        self.is_train = is_train
 
     def _read(self, base_dir):
         dataset_path = "train.iob" if self.is_train else "test.iob"
