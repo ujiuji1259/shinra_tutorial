@@ -63,7 +63,11 @@ class ShinraDataset(Dataset):
     def _preprocess(self, tokens, labels):
         tokens = ["[CLS]"] + [self.vocab[t] for t in tokens][:511]
         tokens = self.tokenizer.convert_tokens_to_ids(tokens)
-        labels = [self.label_vocab["O"]] + [self.label_vocab[l] for l in labels][:511]
+        if self.is_train :
+            labels = [self.label_vocab["O"]] + [self.label_vocab[l] for l in labels][:511]
+        else :
+            labels = []
+            
         return tokens, labels
 
     def __getitem__(self, item):
