@@ -8,7 +8,7 @@ from transformers import BertForTokenClassification, BertJapaneseTokenizer
 
 from code.data import ShinraDataset, my_collate_fn
 from code.util import decode_output, print_shinra_format
-
+from tqdm import tqdm
 
 device = "cuda" if torch.cuda.is_available else "cpu"
 
@@ -31,7 +31,7 @@ def predict(model, dataset):
         losses = []
         preds = []
         test_infos = []
-        for tokens, _, infos in dataloader:
+        for tokens, _, infos in tqdm(dataloader):
             input_x = pad_sequence([torch.tensor(token)
                                     for token in tokens], batch_first=True, padding_value=0).to(device)
 
@@ -61,10 +61,10 @@ if __name__ == "__main__":
 
     # load model
     model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab)).to(device)
-    #model.load_state_dict(torch.load(args.model_path))
+    model.load_state_dict(torch.load(args.model_path))
 
     preds, infos = predict(model, dataset)
-    outputs = decoce_output(preds, infos)
+    outputs = decode_output(preds, infos)
     print_shinra_format(outputs, args.output_path)
     #torch.save(model.state_dict(), args.model_path)
 
