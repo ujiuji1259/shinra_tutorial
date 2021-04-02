@@ -53,7 +53,7 @@ def decode_output(labels, infos):
     return chunks
 
 def print_shinra_format(chunks, path):
-    chunks = [json.dumps(c) for c in chunks]
+    chunks = [json.dumps(c, ensure_ascii=False) for c in chunks]
     with open(path, 'w') as f:
         f.write('\n'.join(chunks))
 
