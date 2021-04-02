@@ -67,5 +67,5 @@ if __name__ == "__main__":
     model = BertForTokenClassification.from_pretrained("cl-tohoku/bert-base-japanese-whole-word-masking", num_labels=len(dataset.label_vocab)).to(device)
 
     losses = train(model, dataset, lr=args.lr, batch_size=args.batch_size, epoch=args.epoch)
-    #torch.save(model.state_dict(), args.model_path)
+    torch.save(model.state_dict(), args.model_path)
 
