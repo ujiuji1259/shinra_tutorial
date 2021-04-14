@@ -38,7 +38,7 @@ def predict(model, dataset):
             mask = input_x > 0
             output = model(input_x, attention_mask=mask)
 
-            output = [0][:,1:,:]
+            output = output[0][:,1:,:]
             mask = mask[:, 1:]
 
             scores, idxs = torch.max(output, dim=-1)
